@@ -1,0 +1,24 @@
+integrand <- function(x) {
+  (4^{d[i]}*d[i]*x^{d[i]-1}*(1-x^2- (16*x^2)/(1+x)^3*(cos(theta[j]))^2))/
+    ((1-x)^2+((16*x^2)/((1+x)^2 - 4*x)*(cos(theta[j])^2)^d[i]))}
+
+int=matrix(NA, nrow=length(theta),ncol=length(d))
+
+for (j in 1:length(theta)){
+for (i in 1:length(d)){                              
+int[j,i]=integrate(integrand, lower = 0, upper = 1)$value
+}
+}
+print(1/int)
+x=seq(0.1,1, by=0.01)
+d=seq(0.1,0.5, by=0.1)
+theta=seq(0.1,pi, by=0.1)
+op <- par(mar = c(5,4,4,4) + 0.1)
+plot(1/int[1,], ylim=c(0.5,1.2), main="Konstantos įgyjamos reikšmės", xlab="Parametro d reikšmės", xaxt='n', ylab='Konstantos reikšmės', col='grey50', lwd=2, type='l'); add=TRUE
+mtext(expression("Parametro " * theta ~ "reikšmės"), side = 4, line=3)
+dd=as.character(d)
+axis(1, at = c(1:5), labels=dd)
+axis(4, at = 1/int[,5], labels=theta )
+for (i in 2:length(theta)){
+  lines(1/int[i,], col='grey50', lwd=2)
+}
