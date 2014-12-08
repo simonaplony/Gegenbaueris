@@ -1,0 +1,51 @@
+#Agreguojamas procesas su parametrais d = 0.2, theta = 0.4
+
+
+d <- seq(0.1, 0.5, by = 0.1)
+theta <- seq(0.1, pi, by = 0.1)
+x <- seq(0.1, 0.9, by = 0.01)
+
+integrand <- function(x){
+  (4^{d[i]}*d[i]*x^{d[i] - 1}*(1 - x^2 - (16*x^2)/(1 + x)^3*(cos(theta[j]))^2))/
+  ((1 - x)^2 + ((16*x^2)/((1 + x)^2 - 4*x)*(cos(theta[j])^2)^d[i]))
+  }
+
+int <- matrix(NA, nrow=length(theta), ncol=length(d))
+
+for (j in 1:length(theta)){
+for (i in 1:length(d)){                              
+int[j, i] <- integrate(integrand, lower = 0, upper = 1)$value
+}
+}
+
+j <- 4; i <- 2; #d = 0.2 ir theta = 0.4
+ar2sum <- 0
+
+f <- function(x){
+(1/int[j, i])*(4^{d[i]}*d[i]*x^{d[i] - 1}*(1 - x^2- (16*x^2)*(1 - x)/(1 + x)^3*(cos(theta[j]))^2))/
+((1 - x)^2+((16*x^2)/((1 + x)^2 - 4*x))*(cos(theta[j])^2))^d[i]
+}
+
+for (k in 1:10000){
+u = runif(1, min=0, max=1)
+b = rbeta(1, 0.27, 4.9, ncp=0)
+M = f(x)/dbeta(x, 0.27, 4.9, ncp=0)
+M1 = M[which.max(M)] + 0.1
+
+while(u > f(b)/(M1*dbeta(b, 0.27, 4.9, ncp=0)))
+  {b = rbeta(1, 0.27, 4.9, ncp=0)
+   u = runif(1, min=0, max=1)}
+
+ar2sum0 = arima.sim(n = 10000, list(ar = c(4*b*cos(theta[j])/(1 + b), -b)))
+ar2sum = ar2sum + ar2sum0
+}
+
+suppressPackageStartupMessages(library(GeneCycle, quietly = TRUE))
+suppressPackageStartupMessages(library(forecast, quietly = TRUE))
+suppressPackageStartupMessages(library(waveslim, quietly = TRUE))
+
+par(mfrow = c(1, 2))
+
+plot(Acf(ar2sum, 550, plot=FALSE)$acf[3:551], type = 'o', ylab = 'ACF', xlab = 'Ankstinių skaičius', main = 'Agreguoto proceso autokoreliacijos funkcija')
+plot(periodogram(ar2sum, method = 'smooth')$freq, smooth(periodogram(ar2sum, method = 'smooth')$spec, kind='3R'), main='Agreguoto proceso suglodinta periodograma', xlab = 'Dažniai', ylab = 'Reikšmės', type = 'l')
+abline(v=0.4/2/pi, col = 3)
