@@ -2,3 +2,4 @@ Gegenbaueris
 ============
 
 R kodai.
+Sėkmės.
