@@ -1,0 +1,6 @@
+x0=c()
+x0[1:2]=c(0,0)
+for (i in 3:10000){
+x0[i]=2*cos(0.3)*x0[i-1] - x0[i-2] + rnorm(1, mean=0, sd=1)
+}
+plot(x0, type='o', xlab='laiko momentai T', ylab='Proceso reikšmės')
