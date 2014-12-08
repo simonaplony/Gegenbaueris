@@ -1,0 +1,14 @@
+#parametrai d=0.2, f_G=0.1024164, phi=0.4, theta=-0.8
+
+par11=matrix(ncol=16, nrow=300)
+
+for (b in 1:300){
+  ge3=dwpt.sim(2^7, 'mb16', 0.2, 0.1024164)
+  ge3_ar=ge3_ar_alt[1]
+  for (i in 2:2^7){
+    ge3_ar[i]=0.4*ge3_ar[i-1] +ge3[i] - 0.8*ge3[i-1] 
+  }
+par11[b,c(21,22)]=spp.mle(ge3_ar, 'mb16')$par
+}
+
+apply(abs(par11-c(rep(0.2,300), rep(0.1024164,300))),2, mean)
