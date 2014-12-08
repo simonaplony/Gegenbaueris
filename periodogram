@@ -1,0 +1,22 @@
+op=par(mfrow=c(2,2))
+suppressPackageStartupMessages(library(GeneCycle, quietly=TRUE))
+all2=read.csv(file.choose(), sep=',')
+all2$Value=gsub(' ', '', all2$Value)
+all2$Value=as.numeric(paste(all2$Value))
+skirt=diff(which(is.na(all2$Value)))
+prad=which(diff(which(is.na(all2$Value)))!=1)
+
+cz2=all2$Value[(skirt[prad[1]]+prad[2]):(skirt[prad[1]]+prad[2]+skirt[prad[2]]-2)]
+
+fr2=all2$Value[(sum(skirt[prad[1:5]])+prad[6]-4):(sum(skirt[prad[1:5]])+prad[6]+skirt[prad[6]]-6)]
+
+cy2=all2$Value[(sum(skirt[prad[1:7]])+prad[8]-6):(sum(skirt[prad[1:7]])+prad[8]+skirt[prad[8]]-8)]
+
+malta2=all2$Value[(sum(skirt[prad[1:11]])+prad[12]-10):(sum(skirt[prad[1:11]])+prad[12]+skirt[prad[12]]-12)]
+
+
+plot(periodogram(diff(cz2))$freq,periodogram(diff(cz2), method='smooth')$spec, ylim=c(0, 1100000), type='both', xlab='Dažnis', ylab='Spektras', main='Periodograma: Čekija')
+plot(periodogram(diff(fr2))$freq,periodogram(diff(fr2), method='smooth')$spec, type='both', ylim=c(0, 300000000), xlab='Dažnis', ylab='Spektras', main='Periodograma: Prancūzija')
+plot(periodogram(diff(cy2))$freq,periodogram(diff(cy2), method='smooth')$spec, ylim=c(0, 31000),type='both',  xlab='Dažnis', ylab='Spektras', main='Periodograma: Kipras')
+plot(periodogram(diff(malta2))$freq,periodogram(diff(malta2), method='smooth')$spec, ylim=c(0, 8000),type='both',  xlab='Dažnis', ylab='Spektras', main='Periodograma: Malta')
+op=par(mfrow=c(1,1))
