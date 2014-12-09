@@ -1,0 +1,14 @@
+########### dispersijos baigtinumas #################
+
+sal=function(x){ ((1+x)/((1-x)*(1 -4*x/(1+x)*cos(theta[j]) + x)*(1 + 4*x/(1+x)*cos(theta[j]) + x)) )*((4^{d[i]}*d[i]*x^{d[i]-1}*(1-x^2- (16*x^2)*(1-x)/(1+x)^3*(cos(theta[j]))^2))/
+    ((1-x)^2+((16*x^2)/((1+x)^2 - 4*x)*(cos(theta[j])^2)^d[i])))}
+
+disp=matrix(NA, nrow=length(theta),ncol=length(d))
+
+for (j in 1:length(theta)){
+
+for (i in 1:length(d)){
+               
+disp[j,i]=integrate(sal, lower = 0, upper = 1)$value
+}
+}
