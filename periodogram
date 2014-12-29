@@ -19,4 +19,4 @@ plot(periodogram(diff(cz2))$freq,periodogram(diff(cz2), method='smooth')$spec, y
 plot(periodogram(diff(fr2))$freq,periodogram(diff(fr2), method='smooth')$spec, type='both', ylim=c(0, 300000000), xlab='Dažnis', ylab='Spektras', main='Periodograma: Prancūzija')
 plot(periodogram(diff(cy2))$freq,periodogram(diff(cy2), method='smooth')$spec, ylim=c(0, 31000),type='both',  xlab='Dažnis', ylab='Spektras', main='Periodograma: Kipras')
 plot(periodogram(diff(malta2))$freq,periodogram(diff(malta2), method='smooth')$spec, ylim=c(0, 8000),type='both',  xlab='Dažnis', ylab='Spektras', main='Periodograma: Malta')
-op=par(mfrow=c(1,1))
+op=par(mfrow=c(1,1)) 
