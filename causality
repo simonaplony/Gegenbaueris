@@ -1,76 +1,68 @@
 d=seq(0.1,0.5, by=0.1)
-theta=seq(0.1,pi, by=0.1)
+theta=seq(0.1,3, by=0.1)
 x=seq(0.1,0.9, by=0.001)
-
-
-integrand <- function(x) {
-  (4^{d[i]}*d[i]*x^{d[i]-1}*(1-x^2- (16*x^2)*(1-x)/(1+x)^3*(cos(theta[j]))^2))/
-    ((1-x)^2+((16*x^2)/((1+x)^2 - 4*x)*(cos(theta[j])^2)^d[i]))}
-
-
 int=matrix(NA, nrow=length(theta),ncol=length(d))
 
+integrand <- function(x) {
+      d[i]*x^{d[i]-1}*(1-x)^{1-2*d[i]}*(1+x)*(1 - (16*x^2*(cos(theta[j]))^2)/(1+x)^4)/
+           ((1 - (4*x*cos(theta[j])^2)/(1+x)^2)^d[i])}
+           
 for (j in 1:length(theta)){
-
-for (i in 1:length(d)){
-  
-                                   
-int[j,i]=integrate(integrand, lower = 0, upper = 1)$value
-}
+  for (i in 1:length(d)){       
+    int[j,i]=integrate(integrand, lower = 0, upper = 1)$value
+  }
 }
 
-################ pirma salyga phi1+phi2 < 1 #########
+sal1=function(x){
+  (1/int[j,i])*d[i]*x^{d[i]-1}*(1-x)^{1-2*d[i]}*(1+x)*(1 - (16*x^2*(cos(theta[j]))^2)*(1+x)^(-4))/
+    ((1- 4*x*cos(theta[j])/(1+x)+x)*(1 - (4*x*cos(theta[j])^2)/(1+x)^2)^d[i]) }
 
-hh=function(x){(4^{d[i]}*d[i]*x^{d[i]-1}*(1-x^2- (16*x^2)*(1-x)/(1+x)^3*(cos(theta[j]))^2))/
-    ((1-x)^2+((16*x^2)/((1+x)^2 - 4*x)*(cos(theta[j])^2)^d[i]))}
+sal2=function(x){
+  (1/int[j,i])*d[i]*x^{d[i]-1}*(1-x)^{1-2*d[i]}*(1+x)*(1 - (16*x^2*(cos(theta[j]))^2)/(1+x)^4)/
+    ((1+ 4*x*cos(theta[j])/(1+x)+x)*(1 - (4*x*cos(theta[j])^2)/(1+x)^2)^d[i])  }
 
-sal=function(x){((4*cos(theta[j])*x)/(1+x) - x)*((4^{d[i]}*d[i]*x^{d[i]-1}*(1-x^2- (16*x^2)*(1-x)/(1+x)^3*(cos(theta[j]))^2))/
-    ((1-x)^2+((16*x^2)/((1+x)^2 - 4*x)*(cos(theta[j])^2)^d[i])))}
+sal3=function(x){
+  (1/int[j,i])*d[i]*x^{d[i]-1}*(1-x)^{1-2*d[i]}*(1+x)*(1 - (16*x^2*(cos(theta[j]))^2)/(1+x)^4)/
+    ((1-x)*(1 - (4*x*cos(theta[j])^2)/(1+x)^2)^d[i])  }
 
-sal1=matrix(NA, nrow=length(theta),ncol=length(d))
 
-for (j in 1:length(theta)){
+sal11=matrix(NA, nrow=length(theta),ncol=length(d))
+sal22=matrix(NA, nrow=length(theta),ncol=length(d))
+sal33=matrix(NA, nrow=length(theta),ncol=length(d))
 
-for (i in 1:length(d)){
-               
-sal1[j,i]=integrate(sal, lower = 0, upper = 1)$value
-}
-}
-
-print(sal1)
-
-############## antra salyga phi2- phi1 < 1 ##########
-
-sal=function(x){ (-x -(4*cos(theta[j])*x)/(1+x) )*((4^{d[i]}*d[i]*x^{d[i]-1}*(1-x^2- (16*x^2)*(1-x)/(1+x)^3*(cos(theta[j]))^2))/
-    ((1-x)^2+((16*x^2)/((1+x)^2 - 4*x)*(cos(theta[j])^2)^d[i])))}
-
-sal2=matrix(NA, nrow=length(theta),ncol=length(d))
+##############################################################################
+########## pirma salyga: E[1/(1 - phi_1 - phi_2)] < \infty ###################
+##############################################################################
 
 for (j in 1:length(theta)){
-
-for (i in 1:length(d)){
-               
-sal2[j,i]=integrate(sal, lower = 0, upper = 1)$value
-}
+  for (i in 1:length(d)){       
+    sal11[j,i]=integrate(sal1, lower = 0, upper = 1)$value
+  }
 }
 
-print(sal2)
+print(sal11)
 
-
-############## trecia salyga |b| <1 #################
-
-sal=function(x){ (abs(x) )*((4^{d[i]}*d[i]*x^{d[i]-1}*(1-x^2- (16*x^2)*(1-x)/(1+x)^3*(cos(theta[j]))^2))/
-    ((1-x)^2+((16*x^2)/((1+x)^2 - 4*x)*(cos(theta[j])^2)^d[i])))}
-
-sal3=matrix(NA, nrow=length(theta),ncol=length(d))
+##############################################################################
+########## antra salyga: E[1/(1 + phi_1 - phi_2)] < \infty ###################
+##############################################################################
 
 for (j in 1:length(theta)){
-
-for (i in 1:length(d)){
-               
-sal3[j,i]=integrate(sal, lower = 0, upper = 1)$value
-}
+  for (i in 1:length(d)){       
+    sal22[j,i]=integrate(sal2, lower = 0, upper = 1)$value
+  }
 }
 
-print(sal3)
+print(sal22)
 
+
+##############################################################################
+########## trecia salyga: E[1/(1 + phi_1 - phi_2)] < \infty ##################
+##############################################################################
+
+for (j in 1:length(theta)){
+  for (i in 1:length(d)){       
+    sal33[j,i]=integrate(sal3, lower = 0, upper = 1)$value
+  }
+}
+
+print(sal33)
