@@ -20,3 +20,137 @@ plot(periodogram(diff(fr2))$freq,periodogram(diff(fr2), method='smooth')$spec, t
 plot(periodogram(diff(cy2))$freq,periodogram(diff(cy2), method='smooth')$spec, ylim=c(0, 31000),type='both',  xlab='Dažnis', ylab='Spektras', main='Periodograma: Kipras')
 plot(periodogram(diff(malta2))$freq,periodogram(diff(malta2), method='smooth')$spec, ylim=c(0, 8000),type='both',  xlab='Dažnis', ylab='Spektras', main='Periodograma: Malta')
 op=par(mfrow=c(1,1)) 
+
+
+################################################################################
+GARMA.est2=function(x,low.u,low.d,up.u,up.d,inc.u,inc.d,p.max,q=0,nback=100){
+  
+  # the number of Gegenbauer factors in the proposed model
+  k=length(low.u)
+  
+  # the number of observations in the input realization 
+  narma=length(x)
+  
+  # the sequence of backcasted observations (for now all are 0) 
+  # and input realization (centered) 
+  nc=narma+nback
+  z=rep(0,nc)
+  z[-(1:nback)]=x-mean(x)
+  
+  # fit a high order AR model for realization to backcast
+  # use ar.yw since, after specifying AR order, Yule-Walker gives the optimal 
+  # AR coefficient estimates in AR model case.
+  AR.p=10
+  AR.phi=ar.yw(z[-(1:nback)],order.max=AR.p,aic=FALSE,demean=FALSE)$ar
+  
+  # use this high order AR model to backcast X(0),...X(-nback+1) 
+  # that is, correspondingly, z(nback),...z(1) 
+  for (i in nback:1) {z[i]=sum(AR.phi*z[(i+1):(i+AR.p)])}
+  
+  # construct the grids
+  u1=seq(low.u[1],up.u[1],inc.u[1])
+  d1=seq(low.d[1],up.d[1],inc.d[1])
+  garmaAIC=99999
+  
+  # when there is only one Gegenbauer factor
+  # grid search on each u,d combination
+  if (k==1)
+  {#1#
+    for (a1 in 1:length(u1))
+    {#2#
+      for (b1 in 1:length(d1))
+      {#3#
+        # transform z sequence to remove Gegenbauer factors
+        # and derive a new sequence of w, which can be fit into ARMA model
+        C1=GEGENB(u1[a1],-d1[b1],nc)
+        w=c()
+        for (i in 1:narma) {w[i]=sum(C1[1:(nback+i-1)]*z[(nback+i):2])}
+        w=w-mean(w)
+        
+        # fit sequence of w with an ARMA(p,q) model
+        armaAIC=99999
+        #for (j in 0:p.max)
+        #{#4#
+          armafit=auto.arima(w, max.p=p.max, max.q=q, ic='aic') #arima(w,order=c(j,0,q),include.mean=FALSE,method="ML",optim.control=list(maxit=20000))
+          if (armafit$aic<armaAIC) {#5#
+            armaAIC=armafit$aic
+            if (armafit$aic+2*2*(d1[b1]!=0)<garmaAIC){
+        garmaAIC=armafit$aic+2*2*(d1[b1]!=0)
+                                                      u=u1[a1]
+                                                      d=d1[b1]
+                                                      p.optim=armafit$arma[1]
+                                                      w.optim=w
+                                                      model.select=armafit
+            }
+          }#5#
+        #}#4#
+      }#3#
+    }#2#
+  }#1#
+  # when there are two Gegenbauer factors
+ 
+  # export the result model estimates
+  cat("By comparing AIC in each grid combination, the estimated model is:\n")
+  if(sum(abs(d))!=0){
+    if(d[1]!=0){
+      cat(paste(
+        "[1-2(", u[1], ")B+B^2)^(", d[1], ")]", sep=""
+      )
+      )
+    }
+    if(k==2 & d[2]!=0){
+      cat(paste(
+        "[1-2(", u[2], ")B+B^2)^(", d[2], ")]", sep=""
+      )
+      )
+    }
+    
+    
+  }
+  if(p.optim!=0){
+    cat("[1")
+    for (i in 1:p.optim)
+    {
+      cat(paste(
+        "-(", model.select$coef[i], ")B^", i, sep=""
+      )
+      )
+    }
+    cat("]")
+  }
+  cat("Y(t)=")
+  if(q!=0){
+    cat("[1")
+    for (i in (p+1):(p+q))
+    {
+      cat(paste(
+        "+(", model.select$coef[i], ")B^", i, sep=""
+      )
+      )
+    }
+    cat("]")
+  }
+  cat("a(t)")
+  cat("\n")
+  cat("The AIC of the GARMA model, which is calculated by -2loglikelihood+2(p+q+m), is ",garmaAIC,",",sep="")
+  cat("\n")
+  cat("where m=0 for ARMA model, m=2 for GARMA(1) model, m=4 for GARMA(2) model.")
+  cat("\n")
+  cat("\n")
+  list(u=u,d=d,AR.order=p.optim,AR.coef=model.select$coef,sigma2=model.select$sigma2,AR.AIC=model.select$aic,GARMA.AIC=garmaAIC)
+}
+#########################################################################################
+
+library(waveslim)
+library(forecast)
+
+spp.mle(diff(cz2)[9:73], 'mb16')
+spp.mle(diff(fr2)[9:137], 'mb16')
+spp.mle(diff(cy2)[13:77], 'mb16')
+spp.mle(diff(malta2)[25:57], 'mb16')
+
+
+GARMA.est2(diff(cz2),-0.01,0.3,0.01,0.5,0.01,0.01,0,q=1,nback=500)
+GARMA.est2(diff(fr2),-0.01,0.3,0.01,0.5,0.01,0.01,3,q=2,nback=500)
+GARMA.est2(diff(cy2),-0.01,0.3,0.01,0.5,0.01,0.01,2,q=1,nback=500)
+GARMA.est2(diff(malta2),-0.01,0.3,0.01,0.5,0.01,0.01,0,q=0,nback=500)
