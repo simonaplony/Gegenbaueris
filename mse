@@ -1,0 +1,202 @@
+########### Elliott-Gray-Woodward GARMA modelio vertinimo funkcija
+########### http://www.texasoft.com/ATSA/GARMA%20parm%20est.R.txt
+
+
+GARMA.est=function(x,low.u,low.d,up.u,up.d,inc.u,inc.d,p.max,q=0,nback=100){
+  
+  # the number of Gegenbauer factors in the proposed model
+  k=length(low.u)
+  
+  # the number of observations in the input realization 
+  narma=length(x)
+  
+  # the sequence of backcasted observations (for now all are 0) 
+  # and input realization (centered) 
+  nc=narma+nback
+  z=rep(0,nc)
+  z[-(1:nback)]=x-mean(x)
+  
+  # fit a high order AR model for realization to backcast
+  # use ar.yw since, after specifying AR order, Yule-Walker gives the optimal 
+  # AR coefficient estimates in AR model case.
+  AR.p=10
+  AR.phi=ar.yw(z[-(1:nback)],order.max=AR.p,aic=FALSE,demean=FALSE)$ar
+  
+  # use this high order AR model to backcast X(0),...X(-nback+1) 
+  # that is, correspondingly, z(nback),...z(1) 
+  for (i in nback:1) {z[i]=sum(AR.phi*z[(i+1):(i+AR.p)])}
+  
+  # construct the grids
+  u1=seq(low.u[1],up.u[1],inc.u[1])
+  d1=seq(low.d[1],up.d[1],inc.d[1])
+  garmaAIC=99999
+  
+  # when there is only one Gegenbauer factor
+  # grid search on each u,d combination
+  if (k==1)
+  {#1#
+    for (a1 in 1:length(u1))
+    {#2#
+      for (b1 in 1:length(d1))
+      {#3#
+        # transform z sequence to remove Gegenbauer factors
+        # and derive a new sequence of w, which can be fit into ARMA model
+        C1=GEGENB(u1[a1],-d1[b1],nc)
+        w=c()
+        for (i in 1:narma) {w[i]=sum(C1[1:(nback+i-1)]*z[(nback+i):2])}
+        w=w-mean(w)
+        
+        # fit sequence of w with an ARMA(p,q) model
+        armaAIC=99999
+        for (j in 0:p.max)
+        {#4#
+          armafit=arima(w,order=c(j,0,q),include.mean=FALSE,method="ML",optim.control=list(maxit=20000))
+          if (armafit$aic<armaAIC) {#5#
+            armaAIC=armafit$aic
+            if (armafit$aic+2*2*(d1[b1]!=0)<garmaAIC){garmaAIC=armafit$aic+2*2*(d1[b1]!=0)
+                                                      u=u1[a1]
+                                                      d=d1[b1]
+                                                      p.optim=j
+                                                      w.optim=w
+                                                      model.select=armafit
+            }
+          }#5#
+        }#4#
+      }#3#
+    }#2#
+  }#1#
+  # when there are two Gegenbauer factors
+  if (k==2) {  #1#
+    u2=seq(low.u[2],up.u[2],inc.u[2])
+    d2=seq(low.d[2],up.d[2],inc.d[2]) 
+    # grid search on each u,d combination
+    for (a2 in 1:length(u2))
+    {  #2#
+      for (b2 in 1:length(d2))
+      {  #3#
+        C2=GEGENB(u2[a2],-d2[b2],nc)
+        for (a1 in 1:length(u1))
+        {  #4#
+          for (b1 in 1:length(d1))
+          {  #5#
+            # transform z sequence to remove the first Gegenbauer factor
+            # and derive a new sequence of w1
+            C1=GEGENB(u1[a1],-d1[b1],nc)
+            w1=c()
+            for (i in 1:narma) {w1[i]=sum(C1[1:(nback+i-1)]*z[(nback+i):2])}
+            w1=w1-mean(w1)
+            
+            #backcasting w1 using high order AR model
+            w1=c(rep(0,nback),w1)
+            AR.phi2=ar.yw(w1[-(1:nback)],order.max=AR.p,demean=FALSE,aic=FALSE)$ar
+            for (i in nback:1) {w1[i]=sum(AR.phi2*w1[(i+1):(i+AR.p)])}
+            
+            # transform w1 sequence to remove the second Gegenbauer factor
+            w=c()
+            for (i in 1:narma) {w[i]=sum(C1[1:(nback+i-1)]*w1[(nback+i):2])}
+            w=w-mean(w)
+            
+            # fit sequence of w with an ARMA(p,q) model
+            armaAIC=99999
+            for (j in 0:p.max)
+            {  #6#
+              armafit=arima(w,order=c(j,0,q),include.mean=FALSE,method="ML",optim.control=list(maxit=20000))
+              if (armafit$aic<armaAIC){  #7#
+                armaAIC=armafit$aic
+                if (armafit$aic+2*2*(d1[b1]!=0)+2*2*(d2[b2]!=0)<garmaAIC){garmaAIC=armafit$aic+2*2*(d1[b1]!=0)+2*2*(d2[b2]!=0)
+                                                                          u=c(u1[a1],u2[a2])
+                                                                          d=c(d1[b1],d2[b2])
+                                                                          p.optim=j
+                                                                          w.optim=w
+                                                                          model.select=armafit
+                }
+                
+              }  #7#
+            }  #6#
+          }  #5#
+        }  #4#
+      }  #3#
+    }  #2#
+  }  #1#
+  # export the result model estimates
+  cat("By comparing AIC in each grid combination, the estimated model is:\n")
+  if(sum(abs(d))!=0){
+    if(d[1]!=0){
+      cat(paste(
+        "[1-2(", u[1], ")B+B^2)^(", d[1], ")]", sep=""
+      )
+      )
+    }
+    if(k==2 & d[2]!=0){
+      cat(paste(
+        "[1-2(", u[2], ")B+B^2)^(", d[2], ")]", sep=""
+      )
+      )
+    }
+    
+    
+  }
+  if(p.optim!=0){
+    cat("[1")
+    for (i in 1:p.optim)
+    {
+      cat(paste(
+        "-(", model.select$coef[i], ")B^", i, sep=""
+      )
+      )
+    }
+    cat("]")
+  }
+  cat("Y(t)=")
+  if(q!=0){
+    cat("[1")
+    for (i in (p+1):(p+q))
+    {
+      cat(paste(
+        "+(", model.select$coef[i], ")B^", i, sep=""
+      )
+      )
+    }
+    cat("]")
+  }
+  cat("a(t)")
+  cat("\n")
+  cat("The AIC of the GARMA model, which is calculated by -2loglikelihood+2(p+q+m), is ",garmaAIC,",",sep="")
+  cat("\n")
+  cat("where m=0 for ARMA model, m=2 for GARMA(1) model, m=4 for GARMA(2) model.")
+  cat("\n")
+  cat("\n")
+  list(u=u,d=d,AR.order=p.optim,AR.coef=model.select$coef,sigma2=model.select$sigma2,AR.AIC=model.select$aic,GARMA.AIC=garmaAIC)
+} 
+################################################
+## GARMA(0.45, 0.102, 2, 0)
+## AR(2) parametrai phi_1=0.2, phi_2=0.9 
+
+library(waveslim)
+library(forecast)
+aics11=matrix(nrow=100, ncol=2)
+us11=matrix(nrow=100, ncol=2)
+ds11=matrix(nrow=100, ncol=2)
+arcofs111=list()
+arcofs112=list()
+
+for(i in 1:100){
+ge3_ar11=GARMA.sim(0.45, cos(0.1024164*2*pi), c(0.2, 0.9), theta=0, number=2^7)
+p11=spp.mle(ge3_ar11, 'mb16')$par
+
+model111=GARMA.est(ge3_ar11,0.7,0.35,0.9,0.5,0.01,0.01,2,q=0,nback=500)
+model112=GARMA.est(ge3_ar11,cos(p11[2]*2*pi),p11[1]-0.09,cos(p11[2]*2*pi),p11[1]+0.09,0.01,0.01,2,q=0,nback=500)
+
+
+aics11[i,]=c(model111$AR.AIC, model112$AR.AIC)
+us11[i,]=c(model111$u, model112$u)
+ds11[i,]=c(model111$d, model112$d)
+arcofs111[[i]]=model111$AR.coef
+arcofs112[[i]]=model112$AR.coef
+}
+
+apply(us11,2, mean)
+apply(ds11,2, mean)
+
+apply(us11^2,2, mean)
+apply((ds11-0.45)^2,2, mean)
