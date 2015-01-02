@@ -4,7 +4,8 @@ suppressPackageStartupMessages(library(GeneCycle, quietly=TRUE))
 DUOMENYS:
 ##### Nueikite zemiau pateiktu adresu:
 ##### http://appsso.eurostat.ec.europa.eu/nui/show.do?query=BOOKMARK_DS-055502_QID_-3DE893BC_UID_-3F171EB0&layout=TIME,C,X,0;GEO,L,Y,0;S_ADJ,L,Z,0;UNIT,L,Z,1;INDIC_NA,L,Z,2;INDICATORS,C,Z,3;&zSelection=DS-055502INDIC_NA,P313;DS-055502INDICATORS,OBS_FLAG;DS-055502UNIT,MIO_EUR_KP_PRE;DS-055502S_ADJ,NSA;&rankName1=UNIT_1_2_-1_2&rankName2=INDICATORS_1_2_-1_2&rankName3=INDIC-NA_1_2_-1_2&rankName4=S-ADJ_1_2_-1_2&rankName5=TIME_1_0_0_0&rankName6=GEO_1_2_0_1&sortC=ASC_-1_FIRST&rStp=&cStp=&rDCh=&cDCh=&rDM=true&cDM=true&footnes=false&empty=false&wai=false&time_mode=NONE&time_most_recent=false&lang=EN&cfo=%23%23%23%2C%23%23%23.%23%23%23
-##### Pasirinkite Download --> CSV --> Flags and footnotes <nuimkkite varnele!> --> Pasirinkite Cell formatting 1 234.56.
+##### Pasirinkite Download --> CSV --> Flags and footnotes <nuimkite varnele!> --> Pasirinkite Cell formatting 1 234.56.
+##### Paspauskite Download in CSV format
 ##### Parsisiuntus isskleisti .zip faila
 
 all2=read.csv(file.choose(), sep=',') ## pasirinkite .csv faila su duomenimis
