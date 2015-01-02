@@ -1,0 +1,38 @@
+op=par(mfrow=c(2,2))
+
+x=seq(0.1,1, by=0.001)
+d=seq(0.1,0.5, by=0.01)
+theta=seq(0.1,pi, by=0.01)
+
+integrand <- function(x) {
+  (d[i]*x^{d[i]-1}*(1-x)^{1-2*d[i]}*(1+x)*(1- (16*x^2*(cos(theta[j]))^2)/(1+x)^4))/
+    (1 - (4*x*(cos(theta[j]))^2)/(1+x)^2)^d[i]}
+
+
+int=matrix(NA, nrow=length(theta),ncol=length(d))
+for (j in 1:length(theta)){
+for (i in 1:length(d)){
+int[j,i]=integrate(integrand, lower = 0, upper = 1)$value
+}
+}
+
+dcz=0.35
+thetacz=2*pi*0.25
+tankiscz=(1/int[148,26])*(dcz*x^{dcz-1}*(1-x)^{1-2*dcz}*(1+x)*(1- (16*x^2*(cos(thetacz))^2)/(1+x)^4))/(1 - (4*x*(cos(thetacz))^2)/(1+x)^2)^dcz
+
+dfr=0.45
+thetafr=2*pi*0.25
+tankisfr=(1/int[148,36])*(dfr*x^{dfr-1}*(1-x)^{1-2*dfr}*(1+x)*(1- (16*x^2*(cos(thetafr))^2)/(1+x)^4))/(1 - (4*x*(cos(thetafr))^2)/(1+x)^2)^dfr
+  
+dcy=0.48
+thetacy=2*pi*0.25
+tankiscy=(1/int[148,39])*(dcy*x^{dcy-1}*(1-x)^{1-2*dcy}*(1+x)*(1- (16*x^2*(cos(thetacy))^2)/(1+x)^4))/(1 - (4*x*(cos(thetacy))^2)/(1+x)^2)^dcy
+  
+dmal=0.47
+thetamal=2*pi*0.25
+tankismal=(1/int[148,38])*(dmal*x^{dmal-1}*(1-x)^{1-2*dmal}*(1+x)*(1- (16*x^2*(cos(thetamal))^2)/(1+x)^4))/(1 - (4*x*(cos(thetamal))^2)/(1+x)^2)^dmal
+
+plot(x,tankiscz, type='l', lwd=3, xlab='Parametro reikšmė', ylab='Tikimybė', main=' Č ekija')
+plot(x,tankisfr, type='l', lwd=3, xlab='Parametro reikšmė', ylab='Tikimybė', main=' Prancū zija')
+plot(x,tankiscy, type='l', lwd=3, xlab='Parametro reikšmė', ylab='Tikimybė', main=' Kipras')
+plot(x,tankismal, type='l',lwd=3, xlab='Parametro reikšmė', ylab='Tikimybė', main=' Malta')
