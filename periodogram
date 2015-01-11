@@ -129,7 +129,7 @@ GARMA.est2=function(x,low.u,low.d,up.u,up.d,inc.u,inc.d,p.max,q=0,nback=100){
   cat("Y(t)=")
   if(q!=0){
     cat("[1")
-    for (i in (p+1):(p+q))
+    for (i in (p.max+1):(p.max+q))
     {
       cat(paste(
         "+(", model.select$coef[i], ")B^", i, sep=""
